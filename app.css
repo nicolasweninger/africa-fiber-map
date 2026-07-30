@@ -1,0 +1,385 @@
+/* Africa Fiber Map — neutral, framework-free styling */
+
+:root {
+  --sidebar-w: 300px;
+  --ink: #1f2933;
+  --ink-soft: #52606d;
+  --ink-faint: #7b8794;
+  --line: #e4e7eb;
+  --bg: #ffffff;
+  --bg-soft: #f5f7fa;
+  --accent: #2b6cb0;
+  --terr: #64748b;          /* muted slate, matches terrestrial line color */
+  --planned: #b45309;       /* amber for "planned" badges */
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--bg);
+}
+
+#app {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* ---------- Sidebar ---------- */
+#sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  height: 100%;
+  overflow-y: auto;
+  border-right: 1px solid var(--line);
+  background: var(--bg);
+  padding: 16px 16px 28px;
+  font-size: 13px;
+  line-height: 1.4;
+  position: relative;
+  transition: width .15s ease, min-width .15s ease, padding .15s ease;
+}
+
+#sidebar h1 {
+  font-size: 15px;
+  margin: 0 0 2px;
+  letter-spacing: .2px;
+  padding-right: 18px; /* keep clear of the collapse button */
+}
+
+/* ---------- Collapsible side panels (shared by #sidebar and #rank-side) ---------- */
+#sidebar.collapsed, #rank-side.collapsed {
+  width: 36px;
+  min-width: 36px;
+  padding: 0;
+  overflow: hidden;
+}
+#sidebar.collapsed > :not(.side-rail),
+#rank-side.collapsed > :not(.side-rail) { display: none; }
+.side-collapse {
+  position: absolute;
+  top: 8px;
+  right: 4px;
+  border: none;
+  background: none;
+  color: var(--ink-faint);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 5px;
+  z-index: 3;
+}
+.side-collapse:hover { color: var(--ink); }
+.side-rail { display: none; }
+.collapsed .side-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  height: 100%;
+  cursor: pointer;
+}
+.side-rail:hover { background: var(--bg-soft); }
+.side-rail-chev { color: var(--ink-faint); font-size: 13px; }
+.side-rail-label {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--ink-faint);
+  font-weight: 600;
+  white-space: nowrap;
+}
+#sidebar .subtitle {
+  font-size: 11px;
+  color: var(--ink-faint);
+  margin: 0 0 8px;
+}
+#sidebar .nav-link {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .2px;
+  color: #fff;
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 5px;
+  padding: 7px 10px;
+  margin: 4px 0 16px;
+  text-decoration: none;
+  transition: background .12s ease, border-color .12s ease;
+}
+#sidebar .nav-link:hover { background: var(--accent); border-color: var(--accent); }
+
+#sidebar .nav-link-secondary {
+  display: block;
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--muted, #64748b);
+  margin: -10px 0 16px;
+  text-decoration: none;
+}
+#sidebar .nav-link-secondary:hover { color: var(--accent); text-decoration: underline; }
+
+.section { margin-bottom: 18px; }
+.section > h2 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--ink-faint);
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+.section .hint {
+  font-size: 10.5px;
+  color: var(--ink-faint);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Checkbox rows */
+.chk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 2px;
+  cursor: pointer;
+  user-select: none;
+}
+.chk:hover { background: var(--bg-soft); border-radius: 4px; }
+.chk input { margin: 0; cursor: pointer; flex: 0 0 auto; }
+.chk .label { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.swatch {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 4px;
+  border-radius: 2px;
+  display: inline-block;
+}
+.swatch.dashed {
+  background-image: repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 7px);
+}
+
+.badge {
+  flex: 0 0 auto;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  color: var(--planned);
+  border: 1px solid var(--planned);
+  border-radius: 3px;
+  padding: 0 4px;
+  line-height: 13px;
+}
+
+/* Per-cable controls */
+.cable-tools {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+#cable-filter {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 12px;
+}
+.linkbtn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 3px;
+}
+.linkbtn:hover { text-decoration: underline; }
+.selnone { color: var(--ink-faint); }
+
+#cable-list {
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 4px;
+}
+#cable-count {
+  font-size: 10.5px;
+  color: var(--ink-faint);
+  margin: 6px 2px 0;
+}
+.empty-note { font-size: 11px; color: var(--ink-faint); padding: 6px; }
+
+/* ---------- Map & footer ---------- */
+#map-wrap {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  position: relative; /* positioning context for the docked pin card */
+}
+#map {
+  flex: 1 1 auto;
+  min-height: 0;
+  background: #eef1f4;
+}
+#footer {
+  flex: 0 0 auto;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  padding: 6px 12px;
+  line-height: 1.5;
+}
+#footer .est { color: var(--planned); }
+#footer .gen { color: var(--ink-faint); }
+#footer a { color: var(--ink-soft); }
+
+/* ---------- Tooltips (MapLibre hover popups) ---------- */
+/* The visible box is the popup content wrapper; the .fm-tt class sits on the outer
+   .maplibregl-popup container, so the .fm-tt .tt-* descendant rules below still match. */
+.maplibregl-popup.fm-tt .maplibregl-popup-content {
+  width: max-content;
+  min-width: 190px;
+  max-width: 300px;
+  /* Never taller than the viewport: tall content (long owner lists) scrolls
+     instead of pushing the title off the top of the screen. */
+  max-height: 70vh;
+  overflow-y: auto;
+  white-space: normal;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.12);
+  font-family: var(--font);
+  font-size: 12px;
+  color: var(--ink);
+  line-height: 1.45;
+}
+/* No arrow on the cursor-following hover tooltip (matches the old Leaflet look). */
+.maplibregl-popup.fm-tt .maplibregl-popup-tip { display: none; }
+.fm-tt .tt-more { color: var(--ink-faint); font-style: italic; }
+.fm-tt .tt-title { font-weight: 700; font-size: 12.5px; margin-bottom: 2px; }
+.fm-tt .tt-sub { color: var(--ink-faint); font-size: 11px; margin-bottom: 5px; }
+.fm-tt .tt-row { margin: 2px 0; }
+.fm-tt .tt-k { color: var(--ink-faint); }
+.fm-tt .tt-badge {
+  display: inline-block;
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  border-radius: 3px;
+  padding: 0 5px;
+  line-height: 15px;
+  vertical-align: 1px;
+}
+.fm-tt .tt-badge.live { color: #05603a; border: 1px solid #05603a; }
+.fm-tt .tt-badge.planned { color: var(--planned); border: 1px solid var(--planned); }
+.fm-tt .tt-est { color: var(--planned); font-size: 10px; }
+.fm-tt .tt-note { color: var(--ink-faint); font-size: 10.5px; margin-top: 4px; }
+
+/* Cost gets its own visually distinct block, divided off from the metadata rows. */
+.fm-tt .tt-egress-block {
+  margin-top: 6px;
+  padding-top: 5px;
+  border-top: 1px solid var(--line);
+}
+.fm-tt .tt-egress { margin: 2px 0; font-weight: 600; }
+.fm-tt .tt-egress .tt-k { color: var(--ink-soft); font-weight: 600; }
+
+.fm-tt table.lat { border-collapse: collapse; margin: 4px 0 2px; width: 100%; }
+.fm-tt table.lat td, .fm-tt table.lat th {
+  text-align: left; padding: 1px 8px 1px 0; font-size: 11px;
+}
+.fm-tt table.lat th { color: var(--ink-faint); font-weight: 500; }
+.fm-tt table.lat .lat-lbl { color: var(--ink-faint); font-weight: 500; padding-right: 10px; }
+.fm-tt table.lat tr.lat-sl td { color: var(--ink-faint); font-style: italic; }
+.fm-tt .cable-dot {
+  display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+  margin-right: 5px; vertical-align: -1px; border: 1px solid rgba(0,0,0,.15);
+}
+.fm-tt .cable-line { margin: 1px 0; }
+.fm-tt .kind { color: var(--ink-faint); font-size: 9.5px; font-style: italic; }
+
+/* ---------- Pinned-cable popup (MapLibre) ---------- */
+/* Reuses the .fm-tt inner row classes (via the .fm-tt wrapper in the popup
+   content); these rules give the MapLibre popup the same look/width. */
+.maplibregl-popup.fm-popup .maplibregl-popup-content {
+  padding: 9px 24px 9px 11px; /* right padding leaves room for the × button */
+  min-width: 190px;
+  max-width: 300px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.16);
+  font-family: var(--font);
+  font-size: 12px;
+  color: var(--ink);
+  line-height: 1.45;
+}
+.maplibregl-popup.fm-popup .fm-popup-body { white-space: normal; }
+.maplibregl-popup.fm-popup .maplibregl-popup-close-button {
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 6px;
+  color: var(--ink-faint);
+}
+.maplibregl-popup.fm-popup .maplibregl-popup-close-button:hover {
+  background: none;
+  color: var(--ink);
+}
+
+/* ---------- Pinned-feature card (docked top-right of the map, not map-anchored) ---------- */
+/* Reuses the .fm-tt inner row classes via the .fm-tt wrapper on the body. Sits above the map
+   (and any map controls) in the top-right corner so it never obscures the clicked geometry. */
+.fm-pin-card {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 320px;
+  max-width: calc(100% - 20px);
+  max-height: 70vh;
+  overflow-y: auto;
+  z-index: 5; /* above default maplibre control z-index */
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.16);
+  font-family: var(--font);
+  font-size: 12px;
+  color: var(--ink);
+  line-height: 1.45;
+  padding: 9px 28px 9px 11px; /* right padding leaves room for the × button */
+}
+.fm-pin-card[hidden] { display: none; }
+.fm-pin-card .fm-popup-body { white-space: normal; }
+.fm-pin-card .fm-pin-close {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 6px;
+  color: var(--ink-faint);
+}
+.fm-pin-card .fm-pin-close:hover { color: var(--ink); }

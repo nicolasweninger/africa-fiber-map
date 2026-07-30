@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Africa Fiber — sources &amp; assumptions</title>
+  <link rel="stylesheet" href="sources.css?v=3" />
+</head>
+<body>
+  <header class="page-head">
+    <div class="head-row">
+      <h1>Sources &amp; assumptions</h1>
+      <nav class="nav-links">
+        <a class="nav-link" href="index.html">&larr; Map</a>
+        <a class="nav-link" href="countries.html">By-country table</a>
+      </nav>
+    </div>
+    <p class="head-note">
+      Where every layer and number on the map comes from, and what we assumed to
+      fill the gaps. Cable geometry and terrestrial routes are real, sourced data;
+      capacities, egress rates, latencies and the Starlink model are estimates that
+      live in <code>data/annotations.js</code> and can be edited by hand. Data snapshot
+      generated 2026-07-28 (UTC).
+    </p>
+  </header>
+
+  <nav class="toc" aria-label="Sections">
+    <ol>
+      <li><a href="#subsea">Subsea cables</a></li>
+      <li><a href="#capacity">Design capacity</a></li>
+      <li><a href="#terrestrial">Terrestrial fiber</a></li>
+      <li><a href="#tiers">Terrestrial tiers</a></li>
+      <li><a href="#egress">Egress / transit rates</a></li>
+      <li><a href="#latency">Fiber latency</a></li>
+      <li><a href="#starlink">Starlink RTT</a></li>
+      <li><a href="#basemap">Basemap &amp; rendering</a></li>
+      <li><a href="#editability">Editability</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <!-- 1 -->
+    <section id="subsea">
+      <h2><span class="sec-num">1</span>Subsea cables</h2>
+      <p class="sec-sub">Geometry, names, colors, owners, suppliers, length, ready-for-service year and landing points.</p>
+      <div class="meta">
+        <span class="chip"><span class="k">Source</span> TeleGeography Submarine Cable Map API v3</span>
+        <span class="chip"><span class="k">License</span> CC BY-SA — attribution required</span>
+        <span class="chip"><span class="k">API</span> unofficial / undocumented</span>
+      </div>
+      <p>
+        Pulled from the
+        <a class="ext" href="https://www.submarinecablemap.com/" target="_blank" rel="noopener">TeleGeography Submarine Cable Map</a>
+        (submarinecablemap.com). The v3 endpoint is unofficial and undocumented; content is
+        licensed CC BY-SA and requires attribution.
+      </p>
+      <p>
+        <strong>77 cables</strong> are retained &mdash; every system with at least one African
+        landing point. These were filtered from roughly <strong>1,400 cables worldwide</strong>
+        via an Africa bounding-box prefilter, then a landing-country check to confirm an actual
+        African landing.
+      </p>
+      <div class="assume">
+        <span class="tag">Assumption</span>
+        <p>
+          A cable is shown as <strong>planned</strong> when the API's <code>is_planned</code> flag
+          is true <em>or</em> its <code>rfs_year</code> is later than 2026. TeleGeography flips
+          <code>is_planned</code> to false as systems near ready-for-service, so the year check
+          catches near-term systems that are not yet live.
+        </p>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section id="capacity">
+      <h2><span class="sec-num">2</span>Design capacity</h2>
+      <p class="sec-sub">Advertised design capacity per system, in Tbps.</p>
+      <div class="meta">
+        <span class="chip"><span class="k">Source</span> hand-compiled from press releases / vendor statements</span>
+        <span class="chip"><span class="k">As of</span> 2026-07</span>
+        <span class="chip"><span class="k">Coverage</span> ~30 major systems</span>
+      </div>
+      <p>
+        Design capacity is <strong>not available in the public API</strong>. Figures were
+        hand-compiled (2026-07) from press releases and vendor statements for about 30 major
+        systems; every other cable shows <span class="num">&ldquo;not public&rdquo;</span>. Values
+        are stored in <code>data/annotations.js</code> and are editable.
+      </p>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th class="lead">System</th><th class="num">Design capacity</th><th>Attribution</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>2Africa</strong></td><td class="num">180 Tbps</td><td>Meta</td></tr>
+            <tr><td><strong>Equiano</strong></td><td class="num">144 Tbps</td><td>Google</td></tr>
+            <tr><td><strong>Medusa</strong></td><td class="num">480 Tbps</td><td>24 pairs &times; 20 Tbps</td></tr>
+            <tr><td><strong>PEACE</strong></td><td class="num">96 Tbps</td><td>PEACE Cable</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tight">Examples above; the full set of ~30 hand-entered values lives in the annotations file.</p>
+    </section>
+
+    <!-- 3 -->
+    <section id="terrestrial">
+      <h2><span class="sec-num">3</span>Terrestrial fiber</h2>
+      <p class="sec-sub">Backbone and metro fiber routes across the continent.</p>
+      <div class="meta">
+        <span class="chip"><span class="k">Source</span> AfTerFibre (NSRC / Steve Song)</span>
+        <span class="chip"><span class="k">License</span> CC BY</span>
+        <span class="chip"><span class="k">Method</span> decoded vector tiles at build time</span>
+      </div>
+      <p>
+        From the
+        <a class="ext" href="https://afterfibre.opentelecomdata.org/" target="_blank" rel="noopener">AfTerFibre project</a>
+        (afterfibre.opentelecomdata.org) &mdash; NSRC / Steve Song community data, CC BY. Geometry is
+        decoded at build time from their MapLibre vector tiles via a z6 sweep over Africa.
+      </p>
+      <p>
+        <strong>144 operator-country aggregates</strong>, split by tier and status into
+        <strong>194 rendered features</strong>, containing <strong>7,670 line segments</strong>
+        across <strong>41 countries</strong>.
+      </p>
+      <div class="caveat">
+        <span class="tag">Caveats</span>
+        <ul>
+          <li>Freshness varies by country &mdash; this is community-contributed data.</li>
+          <li>
+            Contributors digitize each route independently and the source is never topologically
+            snapped, so links that physically meet often remain <strong>disconnected segments</strong>
+            &mdash; a source-data limitation, not a tiling artifact (re-decoding at higher zoom yields
+            the same routes and total length with finer vertices, but no additional connectors).
+          </li>
+          <li>Segments are aggregated per operator + country + tier + status, so per-route detail is limited.</li>
+          <li>
+            The app thins geometry in memory for render performance (Ramer&ndash;Douglas&ndash;Peucker,
+            0.04&deg; &asymp; 4&nbsp;km tolerance, roughly &minus;29% points). This is display-only;
+            the data files are untouched.
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section id="tiers">
+      <h2><span class="sec-num">4</span>Terrestrial tiers (Core / Distribution / Access)</h2>
+      <p class="sec-sub">Network-role classification of terrestrial routes.</p>
+      <div class="meta">
+        <span class="chip"><span class="k">Source</span> derived heuristically (not a source attribute)</span>
+        <span class="chip"><span class="k">Confidence</span> indicative only</span>
+      </div>
+      <p>
+        Tier is <strong>not a source attribute</strong>; it is derived per route. The z6 tile
+        sweep clips each physical route into many short fragments, so we first stitch fragments
+        that share an endpoint back into <strong>connected routes</strong> (~2,205 of them), then
+        classify each route by its <strong>geodesic length</strong>:
+        <strong>&ge;&nbsp;150&nbsp;km &rarr; Core</strong>,
+        <strong>15&ndash;150&nbsp;km &rarr; Distribution</strong>,
+        <strong>&lt;&nbsp;15&nbsp;km &rarr; Access</strong>. A backbone-optical source attribute
+        (<code>type</code>/<code>technology</code> of DWDM, WDM, OPGW or OGW) forces Core over the
+        length rule. The source carries no clean metro/access attribute, so nothing forces Access.
+        This yields a genuine three-way split &mdash; roughly
+        <strong>32% / 28% / 40%</strong> Core / Distribution / Access by route
+        (<strong>85 / 79 / 30</strong> of the 194 rendered features) &mdash; replacing the old
+        aggregate-length rule that put 124 of 144 aggregates in Core. Treat tiers as
+        <strong>indicative only</strong>; per-feature overrides are possible via
+        <code>tier_overrides</code> in <code>data/annotations.js</code>.
+      </p>
+      <p>
+        <strong>Access-tier coverage is sparse and uneven &mdash; a source-data limitation, not a
+        classification artifact.</strong> ~93% of access-tier fragments sit in just three countries
+        (Uganda 728, South Africa 375, Ghana 141 of 1,340) because AfTerFibre is a community-mapped
+        <em>backbone</em> dataset: metro and last-mile fiber appears only where local contributors
+        mapped it. The real metro/FTTx networks of most African cities (Lagos, Nairobi, Cairo,
+        Abidjan&hellip;) are commercially sensitive and are not published in any open dataset, so
+        their absence from the map does not mean they don't exist.
+      </p>
+    </section>
+
+    <!-- 5 -->
+    <section id="egress">
+      <h2><span class="sec-num">5</span>Egress / transit rates</h2>
+      <p class="sec-sub">Regional wholesale IP-transit benchmarks at the landing hub.</p>
+      <div class="meta">
+        <span class="chip"><span class="k">Type</span> estimates</span>
+        <span class="chip"><span class="k">Basis</span> ~10G commit, $/Gbps&middot;mo</span>
+        <span class="chip"><span class="k">Revised</span> 2026-07</span>
+      </div>
+      <p>
+        Per-cable prices are <strong>not public anywhere</strong>. The figures shown are
+        <strong>regional wholesale IP-transit benchmarks</strong> at the landing hub, at roughly a
+        10G commit, expressed in $/Gbps&middot;month.
+      </p>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th class="lead">Region</th><th class="num">Estimate ($/Gbps&middot;mo)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>West Africa</strong></td><td class="num">$3,000</td></tr>
+            <tr><td><strong>Southern Africa</strong></td><td class="num">$2,000</td></tr>
+            <tr><td><strong>East Africa</strong></td><td class="num">$3,000</td></tr>
+            <tr><td><strong>North Africa</strong></td><td class="num">$1,250</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Revised 2026-07 &mdash; previously roughly 1.4&ndash;2&times; higher. East Africa was cut
+        about 2&times; to reflect post-2Africa/PEACE price erosion.
+      </p>
+      <p><strong>What the estimates lean on</strong></p>
+      <ul>
+        <li>
+          <strong>TeleGeography price-erosion research:</strong> global floor $0.05&ndash;0.07/Mbps/mo at
+          London / Marseille (Q2 2025); South Africa 10GigE &minus;45% y/y; Johannesburg&ndash;London
+          100G wavelength median ~$46,900/mo (Q1 2024, &minus;24%/yr); the Red Sea route near-flat due to
+          the Egypt crossing bottleneck (Telecom Egypt fees reportedly up to ~$300M per cable).
+        </li>
+        <li>
+          <strong>Internet Society 2020 IXP report:</strong> Lagos IP transit $27.45/Mbps vs $0.43 for
+          local peering.
+        </li>
+        <li>
+          <strong>Cloudflare bandwidth-cost series:</strong> historic Africa &asymp; 14&times; the North
+          America benchmark (2016-era, now outdated).
+        </li>
+        <li>
+          <strong>Cloud egress list prices:</strong> AWS Cape Town $0.154/GB (&asymp; 1.7&times; Europe);
+          Azure South Africa $0.181/GB (&asymp; 2.1&times;).
+        </li>
+      </ul>
+      <p><strong>Sources</strong></p>
+      <ul class="src">
+        <li><span class="who">Internet Society</span> &mdash; <a class="ext" href="https://www.internetsociety.org/resources/doc/2020/ixp-report-2020/" target="_blank" rel="noopener">IXP report 2020</a></li>
+        <li><span class="who">TeleGeography</span> &mdash; <a class="ext" href="https://resources.telegeography.com/ip-transit-price-erosion-significant-regional-differences-remain" target="_blank" rel="noopener">IP transit price erosion</a></li>
+        <li><span class="who">TeleGeography</span> &mdash; <a class="ext" href="https://resources.telegeography.com/global-pricing-trends-in-a-new-era" target="_blank" rel="noopener">Global pricing trends in a new era</a></li>
+        <li><span class="who">TeleGeography</span> &mdash; <a class="ext" href="https://resources.telegeography.com/wavelength-pricing-findings-from-2024-conference-circuit" target="_blank" rel="noopener">Wavelength pricing: findings from the 2024 conference circuit</a></li>
+        <li><span class="who">TeleGeography</span> &mdash; <a class="ext" href="https://www2.telegeography.com/hubfs/LP-Assets/Ebooks/state-of-the-network-2025.pdf" target="_blank" rel="noopener">State of the Network 2025 (PDF)</a></li>
+        <li><span class="who">Cloudflare</span> &mdash; <a class="ext" href="https://medium.com/cloudflare-blog/the-relative-cost-of-bandwidth-around-the-world-daa1111e7364" target="_blank" rel="noopener">The relative cost of bandwidth around the world</a></li>
+        <li><span class="who">EgressCost</span> &mdash; <a class="ext" href="https://egresscost.com/aws/" target="_blank" rel="noopener">AWS egress pricing</a></li>
+        <li><span class="who">CNN</span> &mdash; <a class="ext" href="https://www.cnn.com/2022/08/07/africa/google-equiano-subsea-internet-cable-west-africa-spc-intl/index.html" target="_blank" rel="noopener">Google Equiano subsea cable, West Africa</a></li>
+        <li><span class="who">DatacenterDynamics</span> &mdash; <a class="ext" href="https://www.datacenterdynamics.com/en/analysis/egypts-submarine-cable-stranglehold/" target="_blank" rel="noopener">Egypt's submarine cable stranglehold</a></li>
+      </ul>
+    </section>
+
+    <!-- 6 -->
+    <section id="latency">
+      <h2><span class="sec-num">6</span>Fiber latency</h2>
+      <p class="sec-sub">Estimated typical round-trip time to US East, US West and Europe.</p>
+      <div class="meta">
+        <span class="chip"><span class="k">Type</span> estimates</span>
+        <span class="chip"><span class="k">Targets</span> Ashburn &middot; San Jose &middot; Marseille</span>
+        <span class="chip"><span class="k">Anchors</span> 18 hand-calibrated hubs</span>
+      </div>
+      <p>
+        Estimated typical RTT to <strong>US East (Ashburn)</strong>, <strong>US West (San Jose)</strong>
+        and <strong>Europe (Marseille</strong>, or London / Lisbon where noted). <strong>18 hub cities</strong>
+        are hand-calibrated anchors drawn from public measurement norms.
+      </p>
+      <p>
+        The other ~130 cities are computed as:
+      </p>
+      <p class="tight" style="padding-left:20px;">
+        <code>RTT ms = round5( haversine_km &times; 1.6 route inflation &divide; 102 km/ms &times; 1.2 overhead )</code>
+      </p>
+      <p>
+        where 1.6 is a route-inflation factor, 102 km/ms is the speed of light in fiber, and
+        1.2 covers per-hop overhead. Real paths vary by provider, IXP presence and cable outages.
+      </p>
+      <div class="assume">
+        <span class="tag">Note</span>
+        <p>
+          Country-level values in the by-country table use the <strong>minimum</strong> RTT across
+          that country's landing cities, and the winning city is labeled.
+        </p>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section id="starlink">
+      <h2><span class="sec-num">7</span>Starlink RTT</h2>
+      <p class="sec-sub">Toggle, default off. Modeled satellite-plus-fiber round-trip.</p>
+      <div class="meta">
+        <span class="chip"><span class="k">Type</span> modeled, not measured</span>
+        <span class="chip"><span class="k">Local median</span> Ookla Speedtest (Q1 2025/2026)</span>
+        <span class="chip"><span class="k">Default state</span> off</span>
+      </div>
+      <p>
+        Each Starlink estimate is a <strong>measured local latency</strong> (Ookla Speedtest medians)
+        <strong>plus the fiber leg</strong> from the nearest Starlink PoP.
+      </p>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th class="lead">Component</th><th>Value</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Local median &mdash; Kenya</td><td class="num">39 ms</td></tr>
+            <tr><td>Local median &mdash; Nigeria</td><td class="num">60 ms</td></tr>
+            <tr><td>Local median &mdash; Rwanda</td><td class="num">67 ms</td></tr>
+            <tr><td>Local median &mdash; DR Congo (no nearby PoP)</td><td class="num">127 ms</td></tr>
+            <tr><td>Local median &mdash; Liberia (no nearby PoP)</td><td class="num">222 ms</td></tr>
+            <tr><td>Default for served regions</td><td class="num">55 ms</td></tr>
+            <tr><td>Nearest PoPs</td><td>Lagos, Nairobi, Johannesburg</td></tr>
+            <tr><td>North Africa</td><td>modeled via European gateways (~60 ms to Europe)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Ookla medians are Q1 2025/2026. Local-median values apply where a nearby PoP exists.</p>
+      <div class="caveat">
+        <span class="tag">Important</span>
+        <p>
+          No published end-to-end Africa&rarr;US/EU Starlink medians exist. These figures are
+          <strong>modeled, not measured</strong>.
+        </p>
+      </div>
+      <p><strong>Sources</strong></p>
+      <ul class="src">
+        <li><span class="who">Developing Telecoms</span> (Ookla) &mdash; <a class="ext" href="https://developingtelecoms.com/telecom-technology/satellite-communications-networks/20393-starlink-beats-sub-saharan-african-isps-on-download-speeds-but-not-latency-ookla.html" target="_blank" rel="noopener">Starlink beats sub-Saharan African ISPs on download speeds but not latency</a></li>
+        <li><span class="who">tech.africa</span> (Ookla) &mdash; <a class="ext" href="https://tech.africa/starlink-africa-speeds-ookla/" target="_blank" rel="noopener">Starlink Africa speeds</a></li>
+      </ul>
+    </section>
+
+    <!-- 8 -->
+    <section id="basemap">
+      <h2><span class="sec-num">8</span>Basemap &amp; rendering</h2>
+      <p class="sec-sub">Map engine, tiles and point layers.</p>
+      <div class="meta">
+        <span class="chip"><span class="k">Engine</span> MapLibre GL JS (vendored)</span>
+        <span class="chip"><span class="k">Tiles</span> CARTO Positron (raster)</span>
+      </div>
+      <p>
+        Rendering uses <strong>MapLibre GL JS</strong> (vendored) with
+        <strong>CARTO Positron</strong> raster tiles &mdash; &copy; OpenStreetMap contributors,
+        &copy; CARTO. City and landing-station points come from the AfTerFibre cities layer plus
+        TeleGeography landing points.
+      </p>
+    </section>
+
+    <!-- 9 -->
+    <section id="editability">
+      <h2><span class="sec-num">9</span>Editability</h2>
+      <p class="sec-sub">What you can hand-edit, and how it survives regeneration.</p>
+      <p>
+        Every estimate &mdash; capacity, egress rates, latencies, the Starlink model and tier
+        overrides &mdash; lives in <code>data/annotations.js</code>. Edits there
+        <strong>survive data regeneration</strong>. The data snapshot was generated
+        <strong>2026-07-28 (UTC)</strong>; refresh it via the scripts in <code>scripts/</code>.
+      </p>
+    </section>
+
+  </main>
+
+  <footer class="page-foot">
+    Cable data: TeleGeography <a href="https://www.submarinecablemap.com/" target="_blank" rel="noopener">submarinecablemap.com</a> (CC BY-SA).
+    Terrestrial fiber: <a href="https://afterfibre.opentelecomdata.org/" target="_blank" rel="noopener">AfTerFibre</a> / NSRC / Steve Song (CC BY).
+    Basemap &copy; OpenStreetMap contributors &copy; CARTO. Estimates are editable in <code>data/annotations.js</code>.
+  </footer>
+</body>
+</html>

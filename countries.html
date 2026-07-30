@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Africa Fiber — by country</title>
+  <link rel="stylesheet" href="countries.css?v=3" />
+</head>
+<body>
+  <header class="page-head">
+    <div class="head-row">
+      <h1>Africa Fiber — by country</h1>
+      <span class="head-links" style="display:inline-flex;gap:16px;white-space:nowrap;">
+        <a class="map-link" href="index.html">&larr; Map</a>
+        <a class="map-link" href="sources.html">Sources &amp; assumptions &rarr;</a>
+      </span>
+    </div>
+    <p class="head-note">
+      Capacities, egress rates and latencies are estimates. RTT figures are round-trip estimates from
+      each country's subsea landing cities.
+    </p>
+    <div class="toolbar">
+      <input id="filter" type="text" placeholder="Filter countries or cables…"
+             autocomplete="off" spellcheck="false" />
+      <div class="bulk-toggle">
+        <button id="expand-all" class="bulk-btn" type="button">Expand all</button>
+        <button id="collapse-all" class="bulk-btn" type="button">Collapse all</button>
+      </div>
+      <label class="sl-toggle"><input id="starlink-toggle" type="checkbox" /> Starlink RTT (est.)</label>
+      <span id="count" class="count"></span>
+    </div>
+  </header>
+
+  <main id="sections" class="sections"></main>
+
+  <footer class="page-foot">
+    Data: TeleGeography submarinecablemap.com (CC BY-SA). Capacities, costs and
+    latencies are estimates — edit <code>data/annotations.js</code>.
+  </footer>
+
+  <!-- Same data globals as the map. No Leaflet needed here. -->
+  <script src="data/cables_meta.js"></script>
+  <script src="data/landing_points.js"></script>
+  <script src="data/cities.js"></script>
+  <script src="data/annotations.js"></script>
+  <script src="countries.js"></script>
+</body>
+</html>
