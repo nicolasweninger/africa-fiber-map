@@ -377,18 +377,15 @@
   var TIER_WIDTH = ["match", ["get", "tier"], "core", 2.5, "distribution", 1.5, "access", 0.8, 1.2];
 
   // Inline style — no external style JSON, no glyphs/sprites (works from file://).
-  // Raster basemap: the CARTO Positron tiles used before, across the a/b/c/d subdomains.
+  var cartoBasemapKey = window.CARTO_BASEMAP_KEY || "";
+  var cartoTileUrl = "https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png";
+  if (cartoBasemapKey) cartoTileUrl += "?key=" + encodeURIComponent(cartoBasemapKey);
   var style = {
     version: 8,
     sources: {
       carto: {
         type: "raster",
-        tiles: [
-          "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-          "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-          "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-          "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
-        ],
+        tiles: [cartoTileUrl],
         tileSize: 256,
         // Full human-readable attribution is rendered in the footer bar instead.
         attribution: "© OpenStreetMap contributors, © CARTO"
