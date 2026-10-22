@@ -201,12 +201,12 @@
 
       rowsHtml.push(
         '<tr data-cable="' + esc(cableName(id).toLowerCase()) + '">' +
-          '<td>' + nameHtml + '</td>' +
-          '<td>' + capCell + '</td>' +
-          '<td>' + eg + '</td>' +
-          '<td>' + latencyCell(lat, "europe_ms", country) + '</td>' +
-          '<td>' + latencyCell(lat, "us_east_ms", country) + '</td>' +
-          '<td>' + latencyCell(lat, "us_west_ms", country) + '</td>' +
+          '<td data-label="Cable">' + nameHtml + '</td>' +
+          '<td data-label="Capacity">' + capCell + '</td>' +
+          '<td data-label="Egress rate">' + eg + '</td>' +
+          '<td data-label="RTT Europe">' + latencyCell(lat, "europe_ms", country) + '</td>' +
+          '<td data-label="RTT US East">' + latencyCell(lat, "us_east_ms", country) + '</td>' +
+          '<td data-label="RTT US West">' + latencyCell(lat, "us_west_ms", country) + '</td>' +
         '</tr>'
       );
     });
@@ -229,12 +229,12 @@
                 'aria-controls="' + detailId + '">' +
           '<span class="col-country"><span class="chev" aria-hidden="true">&rsaquo;</span>' +
             '<span class="country-name">' + esc(country) + '</span></span>' +
-          '<span class="agg-cables">' + cablesAgg + '</span>' +
-          '<span class="agg-cap">' + capAgg + '</span>' +
-          '<span class="agg-egress">' + eg + '</span>' +
-          '<span class="agg-lat">' + latencyCell(lat, "europe_ms", country) + '</span>' +
-          '<span class="agg-lat">' + latencyCell(lat, "us_east_ms", country) + '</span>' +
-          '<span class="agg-lat">' + latencyCell(lat, "us_west_ms", country) + '</span>' +
+          '<span class="agg-cables" data-label="Cables">' + cablesAgg + '</span>' +
+          '<span class="agg-cap" data-label="Capacity">' + capAgg + '</span>' +
+          '<span class="agg-egress" data-label="Egress rate">' + eg + '</span>' +
+          '<span class="agg-lat" data-label="RTT Europe">' + latencyCell(lat, "europe_ms", country) + '</span>' +
+          '<span class="agg-lat" data-label="RTT US East">' + latencyCell(lat, "us_east_ms", country) + '</span>' +
+          '<span class="agg-lat" data-label="RTT US West">' + latencyCell(lat, "us_west_ms", country) + '</span>' +
         '</button>' +
         '<div class="detail" id="' + detailId + '" hidden>' +
           '<table>' +

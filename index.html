@@ -5,11 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Africa Fiber Infrastructure Map</title>
   <link rel="stylesheet" href="vendor/maplibre-gl.css" />
-  <link rel="stylesheet" href="app.css?v=3" />
+  <link rel="stylesheet" href="app.css?v=4" />
 </head>
 <body>
   <div id="app">
-    <aside id="sidebar"><!-- built by app.js --></aside>
+    <button id="layers-toggle" type="button" aria-controls="sidebar" aria-expanded="false" hidden>Layers</button>
+    <div id="sidebar-backdrop" aria-hidden="true" hidden></div>
+    <aside id="sidebar" aria-label="Map layers"><!-- built by app.js --></aside>
     <div id="map-wrap">
       <div id="map"></div>
       <footer id="footer"><!-- built by app.js --></footer>
@@ -29,6 +31,6 @@
 
   <!-- App -->
   <script src="config.js"></script>
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

@@ -18,6 +18,8 @@
   var ANN_CR      = ANN.country_region || {};
   var ANN_LAT     = ANN.latency        || {};
   var ANN_SL      = ANN.starlink       || {};
+  var mobileLayout = window.matchMedia("(max-width: 768px), (max-height: 500px) and (pointer: coarse)");
+  var coarsePointer = window.matchMedia("(pointer: coarse)");
 
   var TERR_COLOR = "#64748b"; // muted slate, distinct from TeleGeography subsea colors
 
@@ -135,7 +137,7 @@
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); set(false); }
     });
     if (opts.initial) el.classList.add("collapsed"); // no animation/callbacks on init
-    return { set: set, get: function () { return el.classList.contains("collapsed"); } };
+    return { set: set, get: function () { return el.classList.contains("collapsed"); }, button: btn };
   }
 
   // Estimated Starlink RTT for a country: local access median + fiber leg from the
@@ -400,8 +402,8 @@
     container: "map",
     style: style,
     center: [17, 2],
-    zoom: 3.2,
-    minZoom: 2,
+    zoom: mobileLayout.matches ? 2 : 3.2,
+    minZoom: mobileLayout.matches ? 1.5 : 2,
     maxZoom: 19,
     renderWorldCopies: true,
     attributionControl: false, // attribution lives in the footer bar
@@ -533,6 +535,13 @@
     clearCableHighlight();     // drop any cable emphasis (from hover)
     setTerrHighlight(fid);
   }
+  function pinPoint(html) {
+    pinnedCableId = null;
+    pinnedTerrId = null;
+    showPinCard(html);
+    clearCableHighlight();
+    clearTerrHighlight();
+  }
 
   // ---------- hover popup (cursor-following) ----------
   var hoverPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, className: "fm-tt", offset: 10, maxWidth: "320px" });
@@ -619,6 +628,7 @@
     // Generic hover binder for the non-cable layers.
     function bindHover(layerId, htmlFn) {
       map.on("mousemove", layerId, function (e) {
+        if (coarsePointer.matches) return;
         cursor(true);
         hoverPopup.setLngLat(e.lngLat).setHTML(htmlFn(e.features[0])).addTo(map);
       });
@@ -630,13 +640,6 @@
 
     bindHover("terr-live",    function (f) { return terrestrialTooltipHTML(f.properties); });
     bindHover("terr-planned", function (f) { return terrestrialTooltipHTML(f.properties); });
-    // Terrestrial: click → pin (emphasise this one line + persistent popup). Hover is bound
-    // above and never touches the pinned emphasis (highlight lives in separate paint props).
-    TERR_LAYERS.forEach(function (lid) {
-      map.on("click", lid, function (e) {
-        pinTerr(e.features[0].properties.fid, e.features[0].properties);
-      });
-    });
     // Landing: read the real properties (with the `cables` array) from the source object,
     // keyed by numeric feature id — rendered props have arrays stringified.
     bindHover("stations", function (f) {
@@ -648,6 +651,7 @@
     // Cables: hover → highlight + dim others + cursor-following tooltip; click → pin.
     CABLE_LAYERS.forEach(function (lid) {
       map.on("mousemove", lid, function (e) {
+        if (coarsePointer.matches) return;
         cursor(true);
         var slug = e.features[0].properties.id;
         setCableHighlight(slug);
@@ -658,20 +662,34 @@
         hoverPopup.remove();
         restoreHighlight(); // keep an active pin highlighted; else reset
       });
-      map.on("click", lid, function (e) {
-        pinCable(e.features[0].properties.id);
-      });
     });
 
-    // Clicking empty map background (no interactive feature under the cursor) closes the
-    // pinned card, matching the old popup's closeOnClick behavior. Feature clicks always
-    // hit-test non-empty here, so the layer handlers above still pin as expected.
-    var PIN_LAYERS = CABLE_LAYERS.concat(TERR_LAYERS);
+    var PIN_LAYERS = CABLE_LAYERS.concat(TERR_LAYERS, ["stations", "cities"]);
     map.on("click", function (e) {
       var layers = PIN_LAYERS.filter(function (lid) { return map.getLayer(lid); });
       if (!layers.length) return;
-      var hits = map.queryRenderedFeatures(e.point, { layers: layers });
-      if (!hits.length) closePin();
+      var query = e.point;
+      if (coarsePointer.matches) {
+        query = [
+          [e.point.x - 12, e.point.y - 12],
+          [e.point.x + 12, e.point.y + 12]
+        ];
+      }
+      var hits = map.queryRenderedFeatures(query, { layers: layers });
+      if (!hits.length) { closePin(); return; }
+      var hit = hits[0];
+      var layerId = hit.layer.id;
+      hoverPopup.remove();
+      if (CABLE_LAYERS.indexOf(layerId) !== -1) {
+        pinCable(hit.properties.id);
+      } else if (TERR_LAYERS.indexOf(layerId) !== -1) {
+        pinTerr(hit.properties.fid, hit.properties);
+      } else if (layerId === "stations") {
+        var real = (LANDING_POINTS.features[hit.id] && LANDING_POINTS.features[hit.id].properties) || hit.properties;
+        pinPoint(landingTooltipHTML(real));
+      } else if (layerId === "cities") {
+        pinPoint(cityTooltipHTML(hit.properties));
+      }
     });
 
     buildSidebar();
@@ -680,12 +698,58 @@
 
     // Layers sidebar collapses to a rail; state persists across sessions.
     var layoutLS = lsGet("fm_layout_v1") || {};
-    attachCollapse(sidebar, {
+    var layersToggle = document.getElementById("layers-toggle");
+    var sidebarBackdrop = document.getElementById("sidebar-backdrop");
+    var sidebarCollapse;
+    function syncSidebarMode() {
+      var isMobile = mobileLayout.matches;
+      layersToggle.hidden = !isMobile;
+      if (!isMobile) {
+        sidebarBackdrop.hidden = true;
+        sidebar.removeAttribute("aria-hidden");
+        sidebarCollapse.button.innerHTML = "&laquo;";
+        sidebarCollapse.button.setAttribute("aria-label", "Collapse layers");
+        sidebarCollapse.button.title = "Collapse";
+      } else {
+        var isOpen = !sidebarCollapse.get();
+        sidebarBackdrop.hidden = !isOpen;
+        sidebar.setAttribute("aria-hidden", isOpen ? "false" : "true");
+        layersToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        sidebarCollapse.button.innerHTML = "&times;";
+        sidebarCollapse.button.setAttribute("aria-label", "Close layers");
+        sidebarCollapse.button.title = "Close";
+      }
+    }
+    sidebarCollapse = attachCollapse(sidebar, {
       label: "Layers",
-      initial: !!layoutLS.sidebar_collapsed,
-      onChange: function (c) { layoutLS.sidebar_collapsed = c; lsSet("fm_layout_v1", layoutLS); },
+      initial: mobileLayout.matches ? true : !!layoutLS.sidebar_collapsed,
+      onChange: function (c) {
+        if (!mobileLayout.matches) {
+          layoutLS.sidebar_collapsed = c;
+          lsSet("fm_layout_v1", layoutLS);
+        }
+        syncSidebarMode();
+        if (mobileLayout.matches) {
+          if (c) layersToggle.focus();
+          else sidebarCollapse.button.focus();
+        }
+      },
       onSettle: function () { map.resize(); }
     });
+    layersToggle.addEventListener("click", function () { sidebarCollapse.set(false); });
+    sidebarBackdrop.addEventListener("click", function () { sidebarCollapse.set(true); });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && mobileLayout.matches && !sidebarCollapse.get()) sidebarCollapse.set(true);
+    });
+    function handleLayoutChange() {
+      map.setMinZoom(mobileLayout.matches ? 1.5 : 2);
+      sidebarCollapse.set(mobileLayout.matches ? true : !!layoutLS.sidebar_collapsed);
+      syncSidebarMode();
+      map.resize();
+    }
+    if (mobileLayout.addEventListener) mobileLayout.addEventListener("change", handleLayoutChange);
+    else mobileLayout.addListener(handleLayoutChange);
+    syncSidebarMode();
 
     // Extension hook: overlay modules (loaded after app.js) register callbacks on
     // window.__fmExt and get called once base layers + sidebar exist. A throwing
@@ -902,11 +966,12 @@
   function buildFooter() {
     var f = document.getElementById("footer");
     var gen = window.DATA_GENERATED_UTC ? String(window.DATA_GENERATED_UTC) : "unknown";
-    f.innerHTML =
+    f.innerHTML = '<span class="footer-desktop">' +
       'Subsea: <a href="https://www.submarinecablemap.com" target="_blank" rel="noopener">TeleGeography submarinecablemap.com</a> (CC BY-SA) · ' +
       'Terrestrial & cities: AfTerFibre / NSRC (CC BY) · ' +
       'Basemap © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>' +
       ' &nbsp;|&nbsp; <span class="est">Capacities, costs and latencies are estimates</span>' +
-      ' &nbsp;|&nbsp; <span class="gen">Data generated: ' + esc(gen) + '</span>';
+      ' &nbsp;|&nbsp; <span class="gen">Data generated: ' + esc(gen) + '</span></span>' +
+      '<span class="footer-mobile"><a href="sources.html">Data sources</a> · © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a></span>';
   }
 })();

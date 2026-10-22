@@ -248,3 +248,27 @@ ul.src .who { color: var(--ink); font-weight: 600; }
 }
 .page-foot a { color: var(--accent); text-decoration: none; }
 .page-foot a:hover { text-decoration: underline; }
+
+@media (max-width: 768px), (max-height: 500px) and (pointer: coarse) {
+  body { overflow-x: hidden; }
+  .page-head {
+    position: static;
+    padding: calc(14px + env(safe-area-inset-top)) 14px 12px;
+  }
+  .head-row { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .nav-links { flex-wrap: wrap; gap: 8px 16px; white-space: normal; }
+  .head-note, p, li, a, code { overflow-wrap: anywhere; }
+  .toc { padding: 10px 14px; }
+  .toc ol {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+  }
+  main { padding: 4px 14px 48px; max-width: 100%; }
+  section { padding-top: 18px; scroll-margin-top: 8px; }
+  .meta { gap: 6px; }
+  .chip { max-width: 100%; white-space: normal; }
+  .assume, .caveat { padding: 10px 12px; }
+  .tbl-wrap { max-width: 100%; overscroll-behavior-inline: contain; }
+  .page-foot { padding: 12px 14px calc(12px + env(safe-area-inset-bottom)); }
+}
