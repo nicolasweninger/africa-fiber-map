@@ -13,7 +13,7 @@ Open `index.html` in a browser, or visit the hosted map.
 
 The hosted map uses CARTO Positron tiles, which require a basemap API key.
 Request a key from [CARTO Basemaps](https://www.carto.com/basemaps/apikey/index.html)
-and restrict its allowed referrer host to `temboanetworks.github.io`.
+and restrict its allowed referrer host to `nicolasweninger.github.io`.
 
 Add the key to this repository as an Actions secret named
 `CARTO_BASEMAP_KEY`, then configure GitHub Pages to use **GitHub Actions** as
